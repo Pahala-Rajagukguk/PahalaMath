@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="icon.png" type="image/x-icon" />
+    <title>PahalaMath</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center; /* Center horizontally */
+        align-items: center; /* Center vertically */
+        height: 100vh; /* Full viewport height */
+        margin: 0;
+        background-color: #eaeaea;
+      }
+      .container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .calculator {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        width: 320px;
+        text-align: center;
+        margin-right: 10px;
+      }
+      input[type="text"] {
+        width: calc(100% - 40px);
+        padding: 20px;
+        font-size: 32px;
+        margin-bottom: 15px;
+        border: 2px solid #4caf50;
+        border-radius: 5px;
+        text-align: right;
+        background-color: #f9f9f9;
+        height: 80px;
+      }
+      .button {
+        width: 70px;
+        height: 70px;
+        font-size: 24px;
+        margin: 5px;
+        cursor: pointer;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+      }
+      .button:hover {
+        background-color: #45a049;
+      }
+      .operator {
+        background-color: #f39c12;
+      }
+      .operator:hover {
+        background-color: #e67e22;
+      }
+      .row {
+        display: flex;
+        justify-content: center;
+      }
+      .clear {
+        background-color: #e74c3c;
+      }
+      .clear:hover {
+        background-color: #c0392b;
+      }
+      .history-container {
+        background-color: #fff;
+        padding: 10px;
+        border-radius: 5px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        width: 320px; /* Menyesuaikan dengan lebar kalkulator */
+        max-height: 400px;
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        margin-left: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center; /* Memastikan isi berada di tengah */
+      }
+      .history {
+        flex: 1;
+        overflow-y: auto;
+        width: 100%; /* Menyesuaikan lebar */
+      }
+      .history-item {
+        margin: 5px 0;
+        font-size: 16px;
+        border-bottom: 1px solid #ccc;
+        padding: 5px 0;
+        text-align: center; /* Memastikan item riwayat berada di tengah */
+      }
+      .history-buttons {
+        display: flex;
+        justify-content: space-between;
+        width: 100%; /* Menyesuaikan lebar */
+        margin-top: 10px;
+      }
+      .history-buttons .button {
+        flex: 1;
+        margin: 0 5px;
+      }
+      .history-buttons .clear {
+        background-color: #e74c3c; /* Merah */
+      }
+      .history-buttons .clear:hover {
+        background-color: #c0392b; /* Merah lebih gelap */
+      }
+      .history-buttons .convert {
+        background-color: #3498db; /* Biru */
+      }
+      .history-buttons .convert:hover {
+        background-color: #2980b9; /* Biru lebih gelap */
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="calculator">
+        <h1>Kalkulator</h1>
+        <input type="text" id="display" disabled />
+        <div class="row">
+          <button class="button" onclick="appendToDisplay('1')">1</button>
+          <button class="button" onclick="appendToDisplay('2')">2</button>
+          <button class="button" onclick="appendToDisplay('3')">3</button>
+          <button class="button operator" onclick="setOperator('+')">+</button>
+        </div>
+        <div class="row">
+          <button class="button" onclick="appendToDisplay('4')">4</button>
+          <button class="button" onclick="appendToDisplay('5')">5</button>
+          <button class="button" onclick="appendToDisplay('6')">6</button>
+          <button class="button operator" onclick="setOperator('-')">-</button>
+        </div>
+        <div class="row">
+          <button class="button" onclick="appendToDisplay('7')">7</button>
+          <button class="button" onclick="appendToDisplay('8')">8</button>
+          <button class="button" onclick="appendToDisplay('9')">9</button>
+          <button class="button operator" onclick="setOperator('*')">x</button>
+        </div>
+        <div class="row">
+          <button
+            class="button clear"
+            style="width: 70px"
+            onclick="clearDisplay()"
+          >
+            C
+          </button>
+          <button class="button" onclick="appendToDisplay('0')">0</button>
+          <button class="button" style="width: 70px" onclick="calculate()">
+            =
+          </button>
+          <button class="button operator" onclick="setOperator('/')">/</button>
+        </div>
+      </div>
+      <div class="history-container">
+        <div class="history" id="history"></div>
+        <div class="history-buttons">
+          <button class="button clear" onclick="clearHistory()">
+            Hapus Riwayat
+          </button>
+          <button class="button convert" onclick="downloadPDF()">
+            Konversi ke PDF
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let display = document.getElementById("display");
+      let historyDiv = document.getElementById("history");
+      let operator = "";
+      let firstNumber = "";
+      let secondNumber = "";
+
+      // Fungsi untuk menambahkan input dari tombol
+      function appendToDisplay(value) {
+        if (operator === "") {
+          firstNumber += value;
+          display.value = firstNumber;
+        } else {
+          secondNumber += value;
+          display.value = firstNumber + " " + operator + " " + secondNumber;
+        }
+      }
+
+      // Fungsi untuk menetapkan operator
+      function setOperator(op) {
+        if (firstNumber !== "") {
+          operator = op;
+          display.value = firstNumber + " " + operator;
+        }
+      }
+
+      // Fungsi untuk menghitung hasil
+      function calculate() {
+        if (firstNumber === "" || secondNumber === "" || operator === "")
+          return;
+        let result;
+
+        switch (operator) {
+          case "+":
+            result = parseFloat(firstNumber) + parseFloat(secondNumber);
+            break;
+          case "-":
+            result = parseFloat(firstNumber) - parseFloat(secondNumber);
+            break;
+          case "*":
+            result = parseFloat(firstNumber) * parseFloat(secondNumber);
+            break;
+          case "/":
+            result =
+              parseFloat(secondNumber) !== 0
+                ? parseFloat(firstNumber) / parseFloat(secondNumber)
+                : "Tidak bisa membagi dengan 0";
+            break;
+          default:
+            result = "Operasi tidak valid";
+            break;
+        }
+
+        display.value = result;
+        addToHistory(`${firstNumber} ${operator} ${secondNumber} = ${result}`);
+        clearInputs();
+      }
+
+      // Fungsi untuk menghapus tampilan
+      function clearDisplay() {
+        display.value = "";
+        clearInputs();
+      }
+
+      // Fungsi untuk menghapus input
+      function clearInputs() {
+        firstNumber = "";
+        secondNumber = "";
+        operator = "";
+      }
+
+      // Fungsi untuk menambahkan item ke riwayat
+      function addToHistory(entry) {
+        const historyItem = document.createElement("div");
+        historyItem.className = "history-item";
+        historyItem.textContent = entry;
+        historyDiv.prepend(historyItem); // Menambahkan item terbaru ke atas
+
+        saveHistory(entry); // Simpan ke localStorage
+      }
+
+      // Fungsi untuk menyimpan riwayat
+      function saveHistory(entry) {
+        let history =
+          JSON.parse(localStorage.getItem("calculatorHistory")) || [];
+        history.unshift(entry); // Tambahkan item baru di depan
+        localStorage.setItem("calculatorHistory", JSON.stringify(history));
+      }
+
+      // Fungsi untuk memuat riwayat
+      function loadHistory() {
+        let history =
+          JSON.parse(localStorage.getItem("calculatorHistory")) || [];
+        history.forEach((entry) => {
+          const historyItem = document.createElement("div");
+          historyItem.className = "history-item";
+          historyItem.textContent = entry;
+          historyDiv.appendChild(historyItem);
+        });
+      }
+
+      // Fungsi untuk menghapus riwayat
+      function clearHistory() {
+        historyDiv.innerHTML = ""; // Hapus tampilan riwayat
+        localStorage.removeItem("calculatorHistory"); // Hapus riwayat dari localStorage
+      }
+
+      // Fungsi untuk mengonversi riwayat ke PDF
+
+      function downloadPDF() {
+        let history =
+          JSON.parse(localStorage.getItem("calculatorHistory")) || [];
+
+        // Menggunakan jsPDF untuk membuat PDF
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        // Menggambar frame
+        const margin = 10;
+        const pageWidth = doc.internal.pageSize.width;
+        const pageHeight = doc.internal.pageSize.height;
+
+        // Menggambar frame
+        doc.setLineWidth(0.5);
+        doc.rect(
+          margin,
+          margin,
+          pageWidth - margin * 2,
+          pageHeight - margin * 2
+        );
+
+        // Menambahkan logo teks
+        doc.setFontSize(18);
+        doc.setTextColor(255, 255, 0); // Warna biru untuk teks logo
+        doc.text("PAHALAMATH", margin + 10, margin + 20); // Posisi logo teks
+
+        // Menambahkan judul
+        //doc.setFontSize(22);
+        //doc.setTextColor(0, 102, 204); // Warna biru untuk judul
+        //doc.text('Riwayat Kalkulator', pageWidth / 2, 40, { align: 'center' });
+
+        // Menambahkan garis pemisah
+        doc.setLineWidth(1);
+        doc.line(margin + 10, 45, pageWidth - margin - 10, 45); // Garis pemisah
+
+        // Menambahkan konten dengan format yang lebih baik
+        doc.setFontSize(12);
+        doc.setTextColor(50, 50, 50); // Warna teks
+        let y = 50; // Posisi awal untuk teks
+
+        history.forEach((item, index) => {
+          if (y + 10 > pageHeight - margin) {
+            doc.addPage(); // Menambahkan halaman baru jika sudah mendekati batas
+            y = margin + 20; // Reset posisi y
+          }
+          doc.text(item, margin + 10, y); // Menambahkan teks dengan margin
+          y += 10; // Jarak antar teks
+        });
+
+        // Menyimpan PDF
+        doc.save("history.pdf");
+      }
+
+      // Event listener untuk input dari keyboard
+      document.addEventListener("keydown", function (event) {
+        if (!isNaN(event.key)) {
+          // Memeriksa apakah key yang ditekan adalah angka
+          appendToDisplay(event.key);
+        } else if (["+", "-", "*", "/"].includes(event.key)) {
+          // Memeriksa apakah key yang ditekan adalah operator
+          setOperator(event.key);
+        } else if (event.key === "Enter") {
+          // Memeriksa apakah key yang ditekan adalah Enter
+          calculate();
+        } else if (event.key === "Backspace") {
+          // Memeriksa apakah key yang ditekan adalah Backspace
+          clearDisplay();
+        }
+      });
+
+      window.onload = loadHistory;
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  </body>
+</html>
